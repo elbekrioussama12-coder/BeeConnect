@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Will You Go On A Date With Me? 💖</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#fff1f2',
+                            100: '#ffe4e6',
+                            200: '#fecdd3',
+                            300: '#fda4af',
+                            400: '#fb7185',
+                            500: '#f43f5e',
+                            600: '#e11d48',
+                            700: '#be123c',
+                            800: '#9f1239',
+                            900: '#881337',
+                        }
+                    },
+                    fontFamily: {
+                        cursive: ['"Dancing Script"', 'cursive'],
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px) rotate(0deg)' },
+                            '50%': { transform: 'translateY(-10px) rotate(3deg)' },
+                        },
+                        pulseGlow: {
+                            '0%, 100%': { opacity: '0.4', transform: 'scale(1)' },
+                            '50%': { opacity: '0.8', transform: 'scale(1.08)' },
+                        }
+                    },
+                    animation: {
+                        'float': 'float 5s ease-in-out infinite',
+                        'pulse-glow': 'pulseGlow 4s ease-in-out infinite',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Modern Glassmorphism Styling */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 182, 193, 0.25);
+        }
+
+        .light .glass-panel {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(244, 63, 94, 0.2);
+            box-shadow: 0 20px 40px -15px rgba(244, 63, 94, 0.15);
+        }
+
+        /* Ambient Canvas Layer */
+        #particleCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Text Gradients */
+        .text-gradient {
+            background: linear-gradient(135deg, #fda4af 0%, #f43f5e 50%, #fb7185 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .light .text-gradient {
+            background: linear-gradient(135deg, #e11d48 0%, #be123c 50%, #9f1239 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #fb7185;
+            border-radius: 999px;
+        }
+    </style>
+</head>
+<body class="bg-[#120713] dark:bg-[#120713] text-slate-100 min-h-screen flex flex-col items-center justify-between p-4 sm:p-6 transition-colors duration-500 font-sans relative overflow-x-hidden">
+
+    <!-- Floating Background Canvas for Animated Hearts/Particles -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- Header Navigation & Controls -->
+    <header class="w-full max-w-xl flex items-center justify-between z-10 py-2">
+        <div class="flex items-center space-x-2 bg-white/10 dark:bg-white/10 light:bg-rose-500/10 px-4 py-1.5 rounded-full border border-rose-300/20 backdrop-blur-md">
+            <i class="fa-solid fa-heart text-rose-500 animate-pulse text-xs"></i>
+            <span class="text-xs font-semibold tracking-wider uppercase text-rose-200 light:text-rose-700">Special Invitation</span>
+        </div>
+
+        <!-- Controls: Theme Toggle & Audio Chime -->
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleAudio()" id="audioBtn" title="Toggle Sound" class="w-9 h-9 rounded-full bg-white/10 light:bg-rose-100 border border-white/20 light:border-rose-300/40 flex items-center justify-center text-rose-300 light:text-rose-600 hover:scale-110 transition-all duration-300">
+                <i id="audioIcon" class="fa-solid fa-volume-high text-sm"></i>
+            </button>
+            <button onclick="toggleTheme()" id="themeBtn" title="Toggle Theme" class="w-9 h-9 rounded-full bg-white/10 light:bg-rose-100 border border-white/20 light:border-rose-300/40 flex items-center justify-center text-amber-300 light:text-rose-600 hover:scale-110 transition-all duration-300">
+                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Card Container -->
+    <main class="w-full max-w-xl glass-panel rounded-3xl p-6 sm:p-8 z-10 my-auto shadow-2xl relative overflow-hidden transition-all duration-500">
+        
+        <!-- Ambient Radial Glow -->
+        <div class="absolute -top-20 -right-20 w-44 h-44 bg-rose-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+        <div class="absolute -bottom-20 -left-20 w-44 h-44 bg-pink-500/20 rounded-full blur-3xl pointer-events-none animate-pulse-glow"></div>
+
+        <!-- ================= STEP 1: HERO / THE QUESTION ================= -->
+        <section id="step-invitation" class="flex flex-col items-center text-center space-y-6 transition-all duration-500">
+            
+            <!-- Animated Icon / Heart Frame -->
+            <div class="relative group">
+                <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-gradient-to-tr from-rose-500 via-pink-400 to-rose-600 p-1 animate-float shadow-lg shadow-rose-500/30">
+                    <div class="w-full h-full rounded-full bg-slate-950 light:bg-rose-50 flex items-center justify-center">
+                        <i class="fa-solid fa-heart-pulse text-4xl sm:text-5xl text-rose-500"></i>
+                    </div>
+                </div>
+                <span class="absolute -bottom-1 -right-1 bg-rose-500 text-white rounded-full px-2.5 py-0.5 text-[10px] font-bold shadow-md uppercase tracking-wider">
+                    Oct 23
+                </span>
+            </div>
+
+            <!-- Title & Subtitle -->
+            <div class="space-y-2">
+                <h1 class="font-cursive text-4xl sm:text-5xl font-bold text-gradient leading-tight">
+                    Will you go on a date with me tomorrow?
+                </h1>
+                <p class="text-rose-200/80 light:text-slate-600 text-xs sm:text-sm font-normal max-w-md">
+                    I would love to spend a magical evening together with you!
+                </p>
+            </div>
+
+            <!-- Event Details Pill -->
+            <div class="w-full bg-white/5 light:bg-rose-50/80 p-4 rounded-2xl border border-rose-300/20 light:border-rose-200/60 flex items-center justify-between text-left">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-rose-500/20 light:bg-rose-100 flex items-center justify-center text-rose-400 light:text-rose-600 text-lg">
+                        <i class="fa-regular fa-calendar-star"></i>
+                    </div>
+                    <div>
+                        <span class="block text-[11px] uppercase tracking-wider text-rose-300 light:text-rose-700 font-semibold">When</span>
+                        <span class="text-sm font-semibold text-white light:text-slate-800">Friday, October 23, 2026</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="block text-[11px] uppercase tracking-wider text-rose-300 light:text-rose-700 font-semibold">Time</span>
+                    <span class="text-sm font-semibold text-rose-300 light:text-rose-600">Evening 🌙</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons Container -->
+            <div class="w-full space-y-3 pt-2">
+                <div id="btn-wrapper" class="relative flex flex-col sm:flex-row items-center justify-center gap-4 min-h-[120px] w-full">
+                    
+                    <!-- YES Button -->
+                    <button id="yesBtn" onclick="handleYes()" class="w-full sm:w-1/2 bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-xl shadow-rose-500/30 transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center justify-center space-x-2 text-base z-20">
+                        <i class="fa-solid fa-sparkles"></i>
+                        <span>YES! 💖</span>
+                    </button>
+
+                    <!-- Runaway / Dodge NO Button -->
+                    <button id="noBtn" onmouseover="dodgeNo()" onclick="dodgeNo()" class="w-full sm:w-1/2 bg-white/10 light:bg-rose-100/80 text-rose-200 light:text-rose-700 font-medium py-3.5 px-6 rounded-2xl border border-white/20 light:border-rose-200 transition-all duration-200 text-sm whitespace-nowrap z-10 hover:border-rose-400">
+                        <span id="noBtnText">NO 😜</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 2: ITINERARY SELECTOR ================= -->
+        <section id="step-itinerary" class="hidden flex-col space-y-6 transition-all duration-500">
+            <div class="text-center space-y-1">
+                <span class="text-xs font-semibold uppercase tracking-widest text-rose-400">Step 2 of 3</span>
+                <h2 class="text-3xl font-bold font-cursive text-gradient">Build Our Date Night</h2>
+                <p class="text-xs text-rose-200/70 light:text-slate-600">Pick the activities you'd enjoy most tomorrow evening!</p>
+            </div>
+
+            <!-- Plan Options -->
+            <div class="space-y-3">
+                <label class="block cursor-pointer">
+                    <input type="checkbox" name="activity" value="Evening Coffee & Pastries ☕" checked class="peer hidden">
+                    <div class="p-3.5 rounded-2xl bg-white/5 light:bg-rose-50/50 border border-white/10 light:border-rose-200 peer-checked:border-rose-500 peer-checked:bg-rose-500/10 light:peer-checked:bg-rose-100/80 flex items-center space-x-3.5 transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 light:text-amber-600 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-mug-hot"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-white light:text-slate-800">Evening Coffee & Pastries ☕</h4>
+                            <p class="text-xs text-rose-200/60 light:text-slate-500">Cozy spot, warm drinks & delicious sweets</p>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-rose-400 opacity-0 peer-checked:opacity-100 text-lg transition-opacity"></i>
+                    </div>
+                </label>
+
+                <label class="block cursor-pointer">
+                    <input type="checkbox" name="activity" value="Sunset Stroll 🌅" checked class="peer hidden">
+                    <div class="p-3.5 rounded-2xl bg-white/5 light:bg-rose-50/50 border border-white/10 light:border-rose-200 peer-checked:border-rose-500 peer-checked:bg-rose-500/10 light:peer-checked:bg-rose-100/80 flex items-center space-x-3.5 transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-orange-500/20 text-orange-300 light:text-orange-600 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-cloud-sun"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-white light:text-slate-800">Sunset Stroll 🌅</h4>
+                            <p class="text-xs text-rose-200/60 light:text-slate-500">A peaceful walk catching evening colors</p>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-rose-400 opacity-0 peer-checked:opacity-100 text-lg transition-opacity"></i>
+                    </div>
+                </label>
+
+                <label class="block cursor-pointer">
+                    <input type="checkbox" name="activity" value="Dinner & Great Conversations 🍽️" checked class="peer hidden">
+                    <div class="p-3.5 rounded-2xl bg-white/5 light:bg-rose-50/50 border border-white/10 light:border-rose-200 peer-checked:border-rose-500 peer-checked:bg-rose-500/10 light:peer-checked:bg-rose-100/80 flex items-center space-x-3.5 transition-all">
+                        <div class="w-10 h-10 rounded-xl bg-rose-500/20 text-rose-300 light:text-rose-600 flex items-center justify-center text-lg">
+                            <i class="fa-solid fa-utensils"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="text-sm font-semibold text-white light:text-slate-800">Dinner & Great Conversations 🍽️</h4>
+                            <p class="text-xs text-rose-200/60 light:text-slate-500">Good food, candlelight & meaningful chats</p>
+                        </div>
+                        <i class="fa-solid fa-circle-check text-rose-400 opacity-0 peer-checked:opacity-100 text-lg transition-opacity"></i>
+                    </div>
+                </label>
+            </div>
+
+            <!-- Start Time Selection -->
+            <div class="p-3.5 rounded-2xl bg-white/5 light:bg-rose-50/80 border border-white/10 light:border-rose-200 flex items-center justify-between">
+                <span class="text-xs sm:text-sm font-medium text-rose-200 light:text-slate-700">Preferred Start Time:</span>
+                <select id="timeSelect" class="bg-slate-900 light:bg-white text-white light:text-slate-800 text-xs sm:text-sm px-3 py-1.5 rounded-xl border border-rose-400/30 focus:outline-none focus:ring-2 focus:ring-rose-500">
+                    <option value="6:00 PM">6:00 PM</option>
+                    <option value="6:30 PM" selected>6:30 PM</option>
+                    <option value="7:00 PM">7:00 PM</option>
+                    <option value="7:30 PM">7:30 PM</option>
+                </select>
+            </div>
+
+            <button onclick="confirmItinerary()" class="w-full bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700 text-white font-bold py-3.5 rounded-2xl shadow-xl shadow-rose-500/30 transition-all duration-300 flex items-center justify-center space-x-2">
+                <span>Continue to Confirmation ✨</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </section>
+
+        <!-- ================= STEP 3: ACCEPTANCE CARD & CONFIRMATION ================= -->
+        <section id="step-confirmation" class="hidden flex-col items-center text-center space-y-6 transition-all duration-500">
+            <div class="w-20 h-20 rounded-full bg-rose-500/20 light:bg-rose-100 text-rose-400 light:text-rose-600 flex items-center justify-center text-4xl border border-rose-400/40 animate-bounce">
+                <i class="fa-solid fa-heart-circle-check"></i>
+            </div>
+
+            <div class="space-y-1">
+                <span class="text-xs font-semibold uppercase tracking-widest text-rose-400">It's A Date!</span>
+                <h2 class="text-3xl sm:text-4xl font-bold font-cursive text-gradient">I Can't Wait! 🎉</h2>
+                <p class="text-xs sm:text-sm text-rose-200/80 light:text-slate-600 max-w-xs mx-auto">
+                    Our date is officially set for tomorrow evening!
+                </p>
+            </div>
+
+            <!-- Final Summary Card -->
+            <div class="w-full bg-white/5 light:bg-rose-50/80 p-5 rounded-2xl border border-rose-400/30 text-left space-y-3">
+                <div class="flex items-center space-x-3 text-rose-200 light:text-slate-700 border-b border-white/10 light:border-rose-200 pb-3">
+                    <i class="fa-regular fa-calendar-check text-rose-400 text-lg"></i>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-rose-300 light:text-rose-700 font-bold">When</p>
+                        <p id="finalTime" class="text-xs sm:text-sm font-semibold text-white light:text-slate-800">Friday, Oct 23, 2026 @ 6:30 PM</p>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-3 text-rose-200 light:text-slate-700">
+                    <i class="fa-solid fa-list-check text-rose-400 text-lg mt-0.5"></i>
+                    <div>
+                        <p class="text-[10px] uppercase tracking-wider text-rose-300 light:text-rose-700 font-bold">Selected Itinerary</p>
+                        <ul id="finalActivities" class="text-xs text-rose-100 light:text-slate-700 font-medium list-disc list-inside space-y-1 mt-1">
+                            <!-- Populated via JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Buttons -->
+            <div class="w-full space-y-3 pt-2">
+                <button onclick="sendWhatsApp()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3.5 px-4 rounded-2xl shadow-lg transition-all duration-300 flex items-center justify-center space-x-2 text-sm">
+                    <i class="fa-brands fa-whatsapp text-lg"></i>
+                    <span>Confirm on WhatsApp 💬</span>
+                </button>
+
+                <button onclick="addToGoogleCalendar()" class="w-full bg-white/10 light:bg-rose-100/80 text-rose-200 light:text-rose-800 font-semibold py-3 px-4 rounded-2xl border border-white/20 light:border-rose-300 transition-all duration-300 flex items-center justify-center space-x-2 text-sm hover:border-rose-400">
+                    <i class="fa-regular fa-calendar-plus text-rose-400"></i>
+                    <span>Add to Google Calendar 📅</span>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer Quote -->
+    <footer class="z-10 text-center py-2">
+        <p class="text-xs text-rose-200/50 light:text-slate-500 font-cursive text-base">"Looking forward to an unforgettable evening." ✨</p>
+    </footer>
+
+    <!-- JavaScript Application Logic -->
+    <script>
+        // State Variables
+        let dodgeCount = 0;
+        let selectedActivities = [];
+        let chosenTime = "6:30 PM";
+        let soundEnabled = true;
+
+        // Web Audio API Sound Chime Generator
+        function playChime() {
+            if (!soundEnabled) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+
+                // Frequencies for a sweet romantic chord melody (C5, E5, G5, C6)
+                const notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, index) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, ctx.currentTime + index * 0.12);
+
+                    gain.gain.setValueAtTime(0, ctx.currentTime + index * 0.12);
+                    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + index * 0.12 + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + index * 0.12 + 0.8);
+
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    osc.start(ctx.currentTime + index * 0.12);
+                    osc.stop(ctx.currentTime + index * 0.12 + 0.8);
+                });
+            } catch (e) {
+                console.log("Audio not supported or blocked by browser policy.");
+            }
+        }
+
+        // Runaway / Dodge Effect for "NO" Button
+        function dodgeNo() {
+            const noBtn = document.getElementById('noBtn');
+            const yesBtn = document.getElementById('yesBtn');
+            const noBtnText = document.getElementById('noBtnText');
+            dodgeCount++;
+
+            // Shrink NO button and enlarge YES button
+            const newNoScale = Math.max(0.4, 1 - dodgeCount * 0.12);
+            const newYesScale = Math.min(1.35, 1 + dodgeCount * 0.08);
+
+            noBtn.style.transform = `scale(${newNoScale})`;
+            yesBtn.style.transform = `scale(${newYesScale})`;
+
+            // Playful responses
+            const playfulMessages = [
+                "Are you sure? 🥺",
+                "Think again! 💖",
+                "Don't be shy! 🌹",
+                "Just click YES! 😉",
+                "No isn't an option! ✨"
+            ];
+            noBtnText.innerText = playfulMessages[Math.min(dodgeCount - 1, playfulMessages.length - 1)];
+
+            // Move NO button away dynamically
+            const randomX = (Math.random() - 0.5) * 160;
+            const randomY = (Math.random() - 0.5) * 80;
+            noBtn.style.position = 'relative';
+            noBtn.style.left = `${randomX}px`;
+            noBtn.style.top = `${randomY}px`;
+        }
+
+        // Handle YES Button Click
+        function handleYes() {
+            playChime();
+            triggerConfetti();
+            switchTab('step-invitation', 'step-itinerary');
+        }
+
+        // Confirm Itinerary Selection
+        function confirmItinerary() {
+            const checkboxes = document.querySelectorAll('input[name="activity"]:checked');
+            selectedActivities = Array.from(checkboxes).map(cb => cb.value);
+            chosenTime = document.getElementById('timeSelect').value;
+
+            if (selectedActivities.length === 0) {
+                selectedActivities = ["Surprise Activities & Sweet Times! ✨"];
+            }
+
+            // Populate Summary
+            document.getElementById('finalTime').innerText = `Friday, Oct 23, 2026 @ ${chosenTime}`;
+            const list = document.getElementById('finalActivities');
+            list.innerHTML = '';
+            selectedActivities.forEach(act => {
+                const li = document.createElement('li');
+                li.innerText = act;
+                list.appendChild(li);
+            });
+
+            triggerConfetti();
+            switchTab('step-itinerary', 'step-confirmation');
+        }
+
+        // Smooth Tab Transition Helper
+        function switchTab(fromId, toId) {
+            const fromElem = document.getElementById(fromId);
+            const toElem = document.getElementById(toId);
+
+            fromElem.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                fromElem.classList.add('hidden');
+                fromElem.classList.remove('flex', 'opacity-0', 'scale-95');
+
+                toElem.classList.remove('hidden');
+                toElem.classList.add('flex', 'opacity-0', 'scale-95');
+                setTimeout(() => {
+                    toElem.classList.remove('opacity-0', 'scale-95');
+                }, 50);
+            }, 300);
+        }
+
+        // Confetti Burst Trigger
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 100,
+                    spread: 80,
+                    origin: { y: 0.6 },
+                    colors: ['#f43f5e', '#fb7185', '#fda4af', '#ffffff', '#e879f9']
+                });
+            }
+        }
+
+        // Send RSVP via WhatsApp
+        function sendWhatsApp() {
+            const text = encodeURIComponent(
+                `Hey! 💖 I'd love to go on our date tomorrow, Friday Oct 23 at ${chosenTime}!\n\n` +
+                `Our Plan:\n` + selectedActivities.map(a => `• ${a}`).join('\n') +
+                `\n\nCan't wait! ✨`
+            );
+            window.open(`https://wa.me/?text=${text}`, '_blank');
+        }
+
+        // Google Calendar Generator
+        function addToGoogleCalendar() {
+            const title = encodeURIComponent("Romantic Date Night 💖");
+            const details = encodeURIComponent(`Date Plans:\n${selectedActivities.join('\n')}`);
+            const location = encodeURIComponent("Romantic Spot");
+            
+            // Oct 23, 2026 UTC Format
+            const startTime = `20261023T183000Z`;
+            const endTime = `20261023T213000Z`;
+
+            const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${startTime}/${endTime}&details=${details}&location=${location}`;
+            window.open(gcalUrl, '_blank');
+        }
+
+        // Theme Toggle (Dark vs Light Soft Pastel)
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('themeIcon');
+            body.classList.toggle('light');
+
+            if (body.classList.contains('light')) {
+                themeIcon.className = "fa-solid fa-sun text-sm";
+                body.style.backgroundColor = "#fff5f6";
+            } else {
+                themeIcon.className = "fa-solid fa-moon text-sm";
+                body.style.backgroundColor = "#120713";
+            }
+        }
+
+        // Audio Toggle
+        function toggleAudio() {
+            soundEnabled = !soundEnabled;
+            const audioIcon = document.getElementById('audioIcon');
+            audioIcon.className = soundEnabled ? "fa-solid fa-volume-high text-sm" : "fa-solid fa-volume-xmark text-sm";
+        }
+
+        // HTML5 Canvas Floating Heart Particle System
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height + 20;
+                this.size = Math.random() * 10 + 6;
+                this.speedY = Math.random() * 0.7 + 0.3;
+                this.speedX = (Math.random() - 0.5) * 0.5;
+                this.opacity = Math.random() * 0.4 + 0.2;
+                this.color = `hsla(${Math.random() * 20 + 340}, 85%, 70%, ${this.opacity})`;
+            }
+
+            update() {
+                this.y -= this.speedY;
+                this.x += this.speedX;
+                if (this.y < -20) this.reset();
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                const h = this.size * 0.3;
+                ctx.moveTo(0, h);
+                ctx.bezierCurveTo(0, 0, -this.size / 2, 0, -this.size / 2, h);
+                ctx.bezierCurveTo(-this.size / 2, (this.size + h) / 2, 0, this.size, 0, this.size);
+                ctx.bezierCurveTo(0, this.size, this.size / 2, (this.size + h) / 2, this.size / 2, h);
+                ctx.bezierCurveTo(this.size / 2, 0, 0, 0, 0, h);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        for (let i = 0; i < 30; i++) {
+            particles.push(new Particle());
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+    </script>
+</body>
+</html>
